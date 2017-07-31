@@ -15,6 +15,10 @@ class ProjectBuilder(object):
 					else: print "specify a project name [-p projectName]"
 	def build(self):
 		self.add_CMakeLists(self.projectName)
+		self.add_Folders(["src","inc","res","build"])
+		self.add_AddClass()
+		self.add_MainCpp()
+
 	def add_CMakeLists(self,ProjectName):
 		text=[
 			"cmake_minimum_required(VERSION 2.8)",
@@ -23,13 +27,11 @@ class ProjectBuilder(object):
 			"   #Debug",
 			"   Release",
 			")",
-
 			"FILE(GLOB_RECURSE SrcFiles \"src/*\")",
 			"FILE(GLOB_RECURSE Heders \"inc/*\")",
-			"FILE(GLOB_RECURSE Resources \"res/*\")",
-
 			"INCLUDE_DIRECTORIES(inc)",
-
+			"FILE(GLOB_RECURSE Resources \"res/*\")",
+			"add_custom_target(res SOURCES ${Resources})",
 			"file(COPY ${CMAKE_SOURCE_DIR}/res DESTINATION ${CMAKE_BINARY_DIR})",
 			"############################################################################",
 			"add_executable(${PROJECT_NAME} ${SrcFiles} ${Heders})",
@@ -40,7 +42,7 @@ class ProjectBuilder(object):
 			return
 		for l in text:file.write(l+"\n")
 		file.close()
-	def add_AddClass(self,):
+	def add_AddClass(self):
 		text=[
 			"import sys",
 			"def main(argv):",
@@ -69,11 +71,11 @@ class ProjectBuilder(object):
 			"			print \"src/inc dir are not existing!\"",
 			"			return",
 			"",
-			"		fileListe[0].write(\"#ifndef {}_H\\n\".format(argv[1].upper()))",
-			"		fileListe[0].write(\"#define {}_H\\n\".format(argv[1].upper()))",
-			"		fileListe[0].write(\"\\n\\n\\n\\n\")",
-			"		fileListe[0].write(\"#endif\".format(argv[1].upper()))",
-			"		fileListe[1].write('#include \"{0}\"\\n'.format(fileNames[0]))",
+			"		fileListe[0].write('#ifndef {}_H\\n'.format(argv[1].upper()))",
+			"		fileListe[0].write('#define {}_H\\n'.format(argv[1].upper()))",
+			"		fileListe[0].write('\\n\\n\\n\\n')",
+			"		fileListe[0].write('#endif'.format(argv[1].upper()))",
+			"		fileListe[1].write('#include \"{}.h\"\\n'.format(argv[1]))",
 			"		for file in fileListe: file.close()",
 			"",
 			#"		print \"Remember to add {} and {} to the project files\".format(fileNames[0],fileNames[1])",
@@ -91,18 +93,18 @@ class ProjectBuilder(object):
 	def add_Folders(self,folderNames=["src","inc","res"]):
 		for forlderName in folderNames:
 			if not os.path.exists(forlderName): os.makedirs(forlderName)
-	def creatPro(self,ProjectName):
-		add_CMakeLists(ProjectName)
-		add_AddClass()
-		addFolders()
-	def add_MainCpp(self,):
-		pass
+	def add_MainCpp(self):
+		text=[
+			"int main(int argc, char* argv[]){\n\n}",
+		]
+		try:file=open("src/main.cpp", 'w')
+		except:
+			print "ERROR: unknown"
+			return
+		for l in text:file.write(l+"\n")
+		file.close()
 
 
-def main(argv):
-	builder=ProjectBuilder(argv)
-	if builder.readyToBuild:builder.build()
-	
 if __name__ == '__main__':
-	main(sys.argv)
-
+	builder=ProjectBuilder(sys.argv)
+	if builder.readyToBuild:builder.build()
